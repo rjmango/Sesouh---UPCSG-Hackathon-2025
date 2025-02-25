@@ -1,11 +1,9 @@
-import Image from "next/image";
+import Image from 'next/image';
 
 export default function Home() {
   return (
     <main>
-      <div
-        className="p-1 bg-red-50 font-mono"
-      >Hello guyss</div>
+      <div className="bg-red-50 p-1 font-mono">Hello guyss</div>
     </main>
   );
 }
