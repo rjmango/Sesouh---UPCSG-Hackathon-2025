@@ -1,3 +1,5 @@
+# streamlit run app.py
+
 import streamlit as st
 import cv2
 import numpy as np
@@ -6,7 +8,24 @@ import tempfile
 from ultralytics import YOLO
 
 model = YOLO("best.pt")
-all_class_names = [model.names[i] for i in range(len(model.names))]
+
+class_dict = {
+    0: "IVtube",
+    1: "bandage",
+    2: "cotton",
+    3: "gloves",
+    4: "mask",
+    5: "medical cap",
+    6: "needle",
+    7: "scissors",
+    8: "syringe",
+    9: "test tube",
+    10: "vial",
+    11: "waste",
+}
+
+all_class_names = list(class_dict.values())
+
 
 np.random.seed(42)
 colors = np.random.randint(0, 255, size=(len(all_class_names), 3), dtype="uint8")
@@ -103,14 +122,13 @@ def detect_webcam(selected_classes, conf_thres):
 
 
 def main():
-    st.title("BioVision: We find (biomedical) Waste :yum: :yum: :100: :moyai:")
+    st.set_page_config(page_title="MedVision", page_icon="icon.ico")
+    st.logo("logo.svg")
+    st.title("We find waste.")
+    # st.image("logo.svg", use_container_width=True)
 
     with st.sidebar:
-        st.header("Settings")
-        mode = st.selectbox(
-            "Select Activity",
-            ["Detect from Image", "Detect from Video", "Detect from Webcam"],
-        )
+        st.header("Configure model settings")
 
         conf_thres = st.slider("Confidence Threshold", 0.0, 1.0, 0.25, 0.01)
 
@@ -118,41 +136,62 @@ def main():
             "Select Classes", options=all_class_names, default=all_class_names
         )
 
-        if mode == "Detect from Image":
-            uploaded_file = st.file_uploader(
-                "Upload an Image", type=["jpg", "jpeg", "png"], key="image_uploader"
-            )
-            detect_image_button = st.button("Detect Image")
-
-        elif mode == "Detect from Video":
-            uploaded_video = st.file_uploader(
-                "Upload a Video",
-                type=["mp4", "avi", "mov", "mkv"],
-                key="video_uploader",
-            )
-            detect_video_button = st.button("Detect Video")
-
-        else:
-            detect_webcam_button = st.button("Start Webcam Detection")
+    mode = st.selectbox(
+        "Select Activity",
+        ["Detect from Image", "Detect from Video", "Detect from Webcam"],
+    )
 
     if mode == "Detect from Image":
+        uploaded_file = st.file_uploader(
+            "Upload an Image", type=["jpg", "jpeg", "png"], key="image_uploader"
+        )
+        detect_image_button = st.button("Detect Image")
+
         if uploaded_file is not None and detect_image_button:
             annotated_img = detect_image(uploaded_file, selected_classes, conf_thres)
-            st.image(
-                annotated_img, caption="Detection Results", use_container_width=True
-            )
+
+            if annotated_img is not None:
+                st.success("Image processed successfully 🎉")
+                st.image(
+                    annotated_img, caption="Detection Results", use_container_width=True
+                )
 
     elif mode == "Detect from Video":
+        uploaded_video = st.file_uploader(
+            "Upload a Video",
+            type=["mp4", "avi", "mov", "mkv"],
+            key="video_uploader",
+        )
+        detect_video_button = st.button("Detect Video")
+
         if uploaded_video is not None and detect_video_button:
             detect_video(uploaded_video, selected_classes, conf_thres)
 
     else:
+        detect_webcam_button = st.button("Start Webcam Detection")
+
         if "detect_webcam_button" in locals() and detect_webcam_button:
             detect_webcam(selected_classes, conf_thres)
+
+    # if mode == "Detect from Image":
+    #     if uploaded_file is not None and detect_image_button:
+    #         annotated_img = detect_image(uploaded_file, selected_classes, conf_thres)
+
+    #         if annotated_img is not None:
+    #             st.success("Image processed successfully 🎉")
+    #             st.image(
+    #                 annotated_img, caption="Detection Results", use_container_width=True
+    #             )
+
+    # elif mode == "Detect from Video":
+    #     st.text("Processing video...")
+    #     if uploaded_video is not None and detect_video_button:
+    #         detect_video(uploaded_video, selected_classes, conf_thres)
+
+    # else:
+    #     if "detect_webcam_button" in locals() and detect_webcam_button:
+    #         detect_webcam(selected_classes, conf_thres)
 
 
 if __name__ == "__main__":
     main()
-
-# type <streamlit run app.py> inside git bash terminal
-# best.pt and app.py must be in the same folder
