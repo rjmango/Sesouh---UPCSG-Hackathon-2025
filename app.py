@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image
 import tempfile
 from ultralytics import YOLO
+import torch
 
 model = YOLO("best.pt")
 
@@ -123,6 +124,7 @@ def detect_webcam(selected_classes, conf_thres):
 
 def main():
     st.set_page_config(page_title="MedVision", page_icon="icon.ico")
+    torch.classes.__path__ = []
     st.logo("logo.svg")
     st.title("We find waste.")
     # st.image("logo.svg", use_container_width=True)
