@@ -7,6 +7,9 @@ from PIL import Image
 import tempfile
 from ultralytics import YOLO
 import torch
+import google.generativeai as genai
+
+genai.configure(api_key="AIzaSyAZMinu_a8yJyTX9iZhsgCr2EzmXlulU8Q")
 
 model = YOLO("best.pt")
 
@@ -31,6 +34,13 @@ all_class_names = list(class_dict.values())
 np.random.seed(42)
 colors = np.random.randint(0, 255, size=(len(all_class_names), 3), dtype="uint8")
 
+def get_disposal_suggestion(item):
+    instructions = ("You will suggest to user on how to properly dispose biomedical wastes for my web app. "
+                    "You can answer anything related to the item, but please do not talk about the app. If not, "
+                    "'I'm sorry, but it looks like that's outside the scope of what I can help with. Can you please clarify or ask a different question?'")
+    prompt = f"{instructions} User prompt: {item}\n"
+    response = genai.GenerativeModel("gemini-2.0-pro-exp-02-05").generate_content(prompt)
+    return response.text if response else "No suggestion available." 
 
 def parse_yolo_results(result):
     boxes = result.boxes
@@ -75,7 +85,8 @@ def detect_image(uploaded_image, selected_classes, conf_thres):
     results = model.predict(source=pil_img, conf=conf_thres)
     detections = parse_yolo_results(results[0])
     annotated_img = draw_boxes(pil_img, detections, selected_classes)
-    return annotated_img
+    detected_items = set([class_dict[d[5]] for d in detections if class_dict[d[5]] in selected_classes])
+    return annotated_img, detected_items
 
 
 def detect_video(video_file, selected_classes, conf_thres):
@@ -138,6 +149,9 @@ def main():
             "Select Classes", options=all_class_names, default=all_class_names
         )
 
+    # col1, col2 = st.columns([0.6, 0.4])
+
+    # with col1:
     mode = st.selectbox(
         "Select Activity",
         ["Detect from Image", "Detect from Video", "Detect from Webcam"],
@@ -149,14 +163,29 @@ def main():
         )
         detect_image_button = st.button("Detect Image")
 
-        if uploaded_file is not None and detect_image_button:
-            annotated_img = detect_image(uploaded_file, selected_classes, conf_thres)
+        if "detected_image" not in st.session_state:
+            st.session_state["detected_image"] = None
+        
+        if uploaded_file and detect_image_button:
+            annotated_img, detected_items = detect_image(uploaded_file, selected_classes, conf_thres)
+            st.session_state["detected_image"] = annotated_img
+            st.session_state["detected_items"] = detected_items
+            
+            # Get disposal suggestion
+            disposal_suggestion = get_disposal_suggestion(detected_items)
+            st.session_state["disposal_suggestion"] = disposal_suggestion  # Store in session state
+            
+            # Ensure chat history is initialized
+            st.session_state["chat_history"] = []
 
-            if annotated_img is not None:
-                st.success("Image processed successfully 🎉")
-                st.image(
-                    annotated_img, caption="Detection Results", use_container_width=True
-                )
+        if st.session_state["detected_image"] is not None:
+            st.success("Image processed successfully 🎉")
+            st.image(st.session_state["detected_image"], caption="Detection Results", use_container_width=True)
+            
+            # Display disposal suggestion if available
+            if "disposal_suggestion" in st.session_state:
+                st.info(f"**Disposal Recommendation:** {st.session_state['disposal_suggestion']}")
+
 
     elif mode == "Detect from Video":
         uploaded_video = st.file_uploader(
@@ -174,6 +203,32 @@ def main():
 
         if "detect_webcam_button" in locals() and detect_webcam_button:
             detect_webcam(selected_classes, conf_thres)
+
+    # with col2:
+    #     with st.expander("💬 Disposal Assistant", expanded=True):
+    #         if "chat_history" not in st.session_state:
+    #             st.session_state["chat_history"] = []
+            
+    #         # Display chat history
+    #         for message in st.session_state["chat_history"]:
+    #             with st.chat_message(message["role"]):
+    #                 st.markdown(message["text"])
+            
+    #         # Create an empty container for chat input to ensure it remains at the bottom
+    #         chat_input_placeholder = st.empty()
+
+    #         user_input = chat_input_placeholder.chat_input("Ask about medical waste disposal...")
+    #         if user_input:
+    #             st.session_state["chat_history"].append({"role": "user", "text": user_input})
+                
+    #             with st.chat_message("user"):
+    #                 st.markdown(user_input)
+                
+    #             response = get_disposal_suggestion(user_input)
+    #             st.session_state["chat_history"].append({"role": "assistant", "text": response})
+                
+    #             with st.chat_message("assistant"):
+    #                 st.markdown(response)
 
     # if mode == "Detect from Image":
     #     if uploaded_file is not None and detect_image_button:
