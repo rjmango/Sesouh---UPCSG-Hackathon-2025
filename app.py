@@ -8,8 +8,12 @@ import tempfile
 from ultralytics import YOLO
 import torch
 import google.generativeai as genai
+import os
+from dotenv import load_dotenv
 
-genai.configure(api_key="AIzaSyAZMinu_a8yJyTX9iZhsgCr2EzmXlulU8Q")
+load_dotenv()
+api_key = os.getenv("GENAI_API_KEY")
+genai.configure(api_key=api_key)
 
 model = YOLO("best.pt")
 
@@ -35,8 +39,8 @@ np.random.seed(42)
 colors = np.random.randint(0, 255, size=(len(all_class_names), 3), dtype="uint8")
 
 def get_disposal_suggestion(item):
-    instructions = ("You will suggest to user on how to properly dispose biomedical wastes for my web app. "
-                    "You can answer anything related to the item, but please do not talk about the app. If not, "
+    instructions = ("You will suggest to user on how to properly dispose biomedical wastes for my web app. Begin directly, no 'okay' or 'sure' and the like at the beginning.."
+                    "You can answer anything related to the item, but please do not talk about the app. If the prompt is beyond the scope, "
                     "'I'm sorry, but it looks like that's outside the scope of what I can help with. Can you please clarify or ask a different question?'")
     prompt = f"{instructions} User prompt: {item}\n"
     response = genai.GenerativeModel("gemini-2.0-pro-exp-02-05").generate_content(prompt)
@@ -170,19 +174,14 @@ def main():
             annotated_img, detected_items = detect_image(uploaded_file, selected_classes, conf_thres)
             st.session_state["detected_image"] = annotated_img
             st.session_state["detected_items"] = detected_items
-            
-            # Get disposal suggestion
             disposal_suggestion = get_disposal_suggestion(detected_items)
-            st.session_state["disposal_suggestion"] = disposal_suggestion  # Store in session state
-            
-            # Ensure chat history is initialized
+            st.session_state["disposal_suggestion"] = disposal_suggestion
             st.session_state["chat_history"] = []
 
         if st.session_state["detected_image"] is not None:
             st.success("Image processed successfully 🎉")
             st.image(st.session_state["detected_image"], caption="Detection Results", use_container_width=True)
             
-            # Display disposal suggestion if available
             if "disposal_suggestion" in st.session_state:
                 st.info(f"**Disposal Recommendation:** {st.session_state['disposal_suggestion']}")
 
