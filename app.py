@@ -158,9 +158,9 @@ def main():
     # with col1:
     mode = st.selectbox(
         "Select Activity",
-        ["Detect from Image", "Detect from Video", "Detect from Webcam"],
+        ["Detect from Image", "Detect from Video"], ## ["Detect from Image", "Detect from Video", "Detect from Webcam"],
     )
-
+    
     if mode == "Detect from Image":
         uploaded_file = st.file_uploader(
             "Upload an Image", type=["jpg", "jpeg", "png"], key="image_uploader"
