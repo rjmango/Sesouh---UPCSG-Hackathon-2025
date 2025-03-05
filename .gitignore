@@ -1,3 +1,6 @@
 best.pt
 *.pt
 .env
+/.streamlit
+/.vscode
+/.git
