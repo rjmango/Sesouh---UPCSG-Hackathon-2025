@@ -48,10 +48,14 @@ To run this project locally, follow these steps:
    ```bash
    pip install -r requirements.txt
    ```
-3. Run the application:
+3. Install the weights named best.pt for the model at the link below and place it in the Sesouh---UPCSG-Hackathon-2025 folder:
+   Drive link:
+   https://drive.google.com/file/d/1I0QVCYcj-62vDrll4sUzD0oxw5_yTABh/view?usp=sharing
+5. Run the application:
    ```bash
    streamlit run app.py
    ```
+   
 
 ## Usage
 1. Upload an image or video file.
