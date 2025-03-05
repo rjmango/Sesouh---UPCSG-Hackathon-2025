@@ -68,6 +68,7 @@ To run this project locally, follow these steps:
 ## Future Improvements
 - Enhance dataset diversity for better accuracy.
 - Implement real-time video streaming analysis.
+- Integrate AI model into various IoT solutions for flexibility and further use cases.
 - Develop a mobile-friendly version for wider accessibility.
 
 ---
