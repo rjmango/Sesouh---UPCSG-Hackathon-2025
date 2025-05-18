@@ -69,6 +69,12 @@ To run this project locally, follow these steps:
 - **Streamlit:** For making interactive deployment simple and effective.
 - **Our Team, Sesuoh:** For dedicated research and development in medical waste detection.
 
+## Team Credits
+- **Model Training:** Lance Axel Gasmen, Julius Manigo  
+- **User Interface Development:** Kimberly Padilla, Jermel Lapaz, Lee Andrei So  
+- **Prototype Development:** Lance Axel Gasmen  
+- **Product Manager:** Julius Manigo  
+
 ## Future Improvements
 - Enhance dataset diversity for better accuracy.
 - Implement real-time video streaming analysis.
