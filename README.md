@@ -82,5 +82,5 @@ To run this project locally, follow these steps:
 - Develop a mobile-friendly version for wider accessibility.
 
 ---
-**MedVision by Sesuoh - We find waste.**
+*MedVision by Sesuoh - We find waste.*
 
